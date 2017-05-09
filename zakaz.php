@@ -1,3 +1,48 @@
+<?php
+//***************** Страница с завершением заказа ******************
+session_start();
+ 
+// формируем массив с товарами в заказе (если товар один - оставляйте только первый элемент массива)
+$products_list = array(
+    1 => array( 
+            'product_id' => $_GET['3'],    //код товара (из каталога CRM)
+            'price'      => $_GET['380'], //цена товара 1
+            'count'      => '1'                      //количество товара 1
+    )
+);
+$products = urlencode(serialize($products_list));
+ 
+// параметры запроса
+$data = array(
+    'key'             => '70ccee7e1caccfd226b3ca7e78274d43', //Ваш секретный токен
+    'order_id'        => number_format(round(microtime(true)*10),0,'.',''), //идентификатор (код) заказа (*автоматически*)
+    'products'        => $products,                 // массив с товарами в заказе
+    'bayer_name'      => $_GET['name'],             // покупатель (Ф.И.О)
+    'phone'           => $_GET['phone'],           // телефон
+    'email'           => $_GET['email'],           // электронка
+    'comment'         => $_GET['product_name'],    // комментарий
+    'site'            => $_SERVER['SERVER_NAME'],  // сайт отправляющий запрос
+    'ip'              => $_SERVER['REMOTE_ADDR'],  // IP адрес покупателя
+    'delivery'        => $_GET['delivery'],        // способ доставки (id в CRM)
+    'delivery_adress' => $_GET['delivery_adress'], // адрес доставки
+    'payment'         => '',          // вариант оплаты (id в CRM)
+    'utm_source'      => $_SESSION['utms']['utm_source'],  // utm_source 
+    'utm_medium'      => $_SESSION['utms']['utm_medium'],  // utm_medium 
+    'utm_term'        => $_SESSION['utms']['utm_term'],    // utm_term   
+    'utm_content'     => $_SESSION['utms']['utm_content'], // utm_content    
+    'utm_campaign'    => $_SESSION['utms']['utm_campaign'] // utm_campaign
+);
+ 
+// запрос
+$curl = curl_init();
+curl_setopt($curl, CURLOPT_URL, 'http://blesport.lp-crm.biz/api/addNewOrder.html');
+curl_setopt($curl, CURLOPT_POST, true);
+curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+$out = curl_exec($curl);
+curl_close($curl);
+//$out – ответ сервера в формате JSON
+?>
 <!DOCTYPE html>
 <html lang="ru">
     <head>
